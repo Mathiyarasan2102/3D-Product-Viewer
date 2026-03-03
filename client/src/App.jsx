@@ -11,6 +11,7 @@ function App() {
     const [isUploading, setIsUploading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isDraggingFile, setIsDraggingFile] = useState(false);
 
     useEffect(() => {
         loadSettings(true);
@@ -70,6 +71,24 @@ function App() {
         }
     };
 
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDraggingFile(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setIsDraggingFile(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDraggingFile(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileUpload(e.dataTransfer.files[0]);
+        }
+    };
+
     return (
         <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-black to-slate-900 flex flex-col text-white font-sans">
 
@@ -103,7 +122,21 @@ function App() {
                 <div className="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none z-0"></div>
 
                 {/* 3D Canvas Area (Left - 75%) */}
-                <div className="flex-1 relative z-10 w-full h-full lg:w-3/4 transition-all duration-300">
+                <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`flex-1 relative z-10 w-full h-full lg:w-3/4 transition-all duration-300 rounded-2xl ${isDraggingFile ? 'ring-2 ring-blue-500 scale-[1.01]' : ''
+                        }`}
+                >
+                    {isDraggingFile && (
+                        <div className="absolute inset-0 z-50 rounded-2xl bg-blue-500/10 border-2 border-blue-500 border-dashed flex items-center justify-center backdrop-blur-sm pointer-events-none">
+                            <div className="bg-black/80 px-6 py-4 rounded-xl flex items-center space-x-3 shadow-2xl">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 16 4-4 4 4"></path></svg>
+                                <span className="font-medium text-blue-100">Drop 3D Model here to load</span>
+                            </div>
+                        </div>
+                    )}
                     <Viewer3D
                         modelUrl={modelUrl}
                         backgroundColor={backgroundColor}
