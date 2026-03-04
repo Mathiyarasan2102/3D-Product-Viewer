@@ -26,18 +26,10 @@ connectDB();
 // Routes
 app.use('/api', apiRoutes);
 
-// Setup frontend static-files serving in production
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
-
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../client/dist', 'index.html'));
-    });
-} else {
-    app.get('/', (req, res) => {
-        res.send('API is running...');
-    });
-}
+// Default API Route
+app.get('/', (req, res) => {
+    res.send('API is running successfully!');
+});
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
