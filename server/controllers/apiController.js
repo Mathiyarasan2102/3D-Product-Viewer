@@ -15,15 +15,20 @@ export const uploadModel = async (req, res) => {
 
 export const saveSettings = async (req, res) => {
     try {
-        const { backgroundColor, wireframeMode, modelUrl } = req.body;
+        const { backgroundColor, wireframeMode, modelUrl, environment, materialColor, metalness, roughness, hotspots } = req.body;
         let settings = await Settings.findOne();
         if (settings) {
-            settings.backgroundColor = backgroundColor;
-            settings.wireframeMode = wireframeMode;
+            if (backgroundColor !== undefined) settings.backgroundColor = backgroundColor;
+            if (wireframeMode !== undefined) settings.wireframeMode = wireframeMode;
             if (modelUrl !== undefined) settings.modelUrl = modelUrl;
+            if (environment !== undefined) settings.environment = environment;
+            if (materialColor !== undefined) settings.materialColor = materialColor;
+            if (metalness !== undefined) settings.metalness = metalness;
+            if (roughness !== undefined) settings.roughness = roughness;
+            if (hotspots !== undefined) settings.hotspots = hotspots;
             await settings.save();
         } else {
-            settings = await Settings.create({ backgroundColor, wireframeMode, modelUrl });
+            settings = await Settings.create(req.body);
         }
         res.status(200).json(settings);
     } catch (error) {
@@ -37,7 +42,16 @@ export const getSettings = async (req, res) => {
         if (settings) {
             res.status(200).json(settings);
         } else {
-            res.status(200).json({ backgroundColor: '#171717', wireframeMode: false, modelUrl: '' });
+            res.status(200).json({
+                backgroundColor: '#171717',
+                wireframeMode: false,
+                modelUrl: '',
+                environment: 'city',
+                materialColor: '#ffffff',
+                metalness: 0,
+                roughness: 1,
+                hotspots: []
+            });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
