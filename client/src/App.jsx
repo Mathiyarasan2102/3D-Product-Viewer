@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import Viewer3D from './components/Viewer3D';
 import Sidebar from './components/Sidebar';
-import { uploadModelAPI, saveSettingsAPI, getSettingsAPI } from './services/api';
+import { uploadModelAPI, saveSettingsAPI, getSettingsAPI, API_BASE_URL } from './services/api';
 
 function App() {
     const [modelUrl, setModelUrl] = useState('');
@@ -24,7 +24,7 @@ function App() {
                 setBackgroundColor(settings.backgroundColor || '#171717');
                 setWireframeMode(settings.wireframeMode || false);
                 if (settings.modelUrl) {
-                    setModelUrl(`http://localhost:5000${settings.modelUrl}`);
+                    setModelUrl(`${API_BASE_URL}${settings.modelUrl}`);
                 }
                 if (!initial) toast.success('Settings loaded successfully');
             }
@@ -38,8 +38,13 @@ function App() {
         setIsSaving(true);
         try {
             let relativeUrl = modelUrl;
-            if (modelUrl.includes('localhost:5000')) {
-                relativeUrl = modelUrl.split('localhost:5000')[1];
+            if (API_BASE_URL && modelUrl.includes(API_BASE_URL)) {
+                relativeUrl = modelUrl.split(API_BASE_URL)[1];
+            } else if (modelUrl.startsWith('http')) {
+                try {
+                    const urlObj = new URL(modelUrl);
+                    relativeUrl = urlObj.pathname;
+                } catch (e) { }
             }
 
             await saveSettingsAPI({
@@ -61,7 +66,7 @@ function App() {
         const toastId = toast.loading('Uploading model...');
         try {
             const data = await uploadModelAPI(file);
-            setModelUrl(`http://localhost:5000${data.url}`);
+            setModelUrl(`${API_BASE_URL}${data.url}`);
             toast.success('Model uploaded successfully', { id: toastId });
         } catch (error) {
             console.error('Upload failed:', error);
